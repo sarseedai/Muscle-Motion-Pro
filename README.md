@@ -1,12 +1,26 @@
-# React + Vite
+# Muscle Motion Pro (Fitness tracker)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+## Pages
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Auth Section
 
-## Expanding the ESLint configuration
+- Login
+- SignUp
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### App Section
+
+- Dashboard
+- Workout Builder 
+- Progress
+- Exercises 
+- Profile
+
+## Third Party Library and Packages
+
+- Vite - Compiling and Bundling - [Link]
+- Tailwind CSS - for styling - [Link]
+- React Router - [Link](https://reactrouter.com/start/declarative/installation)
+- Lucide react icons - [Link](https://lucide.dev/guide/packages/lucide-react)
+- Recharts - for piecharts and barcharts - [Link](https://www.npmjs.com/package/recharts)
+- Pangea - for drag and drop - [Link](https://www.npmjs.com/package/@hello-pangea/dnd)
