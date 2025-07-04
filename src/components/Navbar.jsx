@@ -9,7 +9,7 @@ const navigate = useNavigate();
   return (
     <div className="bg-gray-100 shadow-sm">
       <div className="flex justify-center gap-30 py-3">
-        <button onClick={()=>{navigate('/')}} className={linkClass}>
+        <button onClick={()=>{navigate('/dashboard')}} className={linkClass}>
           <Home size={20} /> Dashboard
         </button>
         <button onClick={()=>{navigate('/workout')}} className={linkClass}>
