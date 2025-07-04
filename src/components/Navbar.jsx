@@ -1,30 +1,34 @@
 import { Home, Dumbbell, BarChart2, List, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
-const linkClass = "flex items-center gap-2 font-medium text-gray-700 text-xl hover:text-purple-600 transition";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Navbar() {
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const linkClass = "flex items-center gap-2 font-medium text-xl transition";
+  const activeClass = "text-purple-600";
+  const inactiveClass = "text-gray-700 hover:text-purple-600";
+
+  const links = [
+    { to: "/", label: "Dashboard", icon: Home },
+    { to: "/workout", label: "Workout Builder", icon: Dumbbell },
+    { to: "/progress", label: "Progress", icon: BarChart2 },
+    { to: "/exercises", label: "Exercises", icon: List },
+    { to: "/profile", label: "Profile", icon: User },
+  ];
 
   return (
     <div className="bg-gray-100 shadow-sm">
-      <div className="flex justify-center gap-30 py-3">
-        <button onClick={()=>{navigate('/dashboard')}} className={linkClass}>
-          <Home size={20} /> Dashboard
-        </button>
-        <button onClick={()=>{navigate('/workout')}} className={linkClass}>
-          <Dumbbell size={20} /> Workout Builder
-        </button>
-        <button onClick={()=>{navigate('/progress')}} className={linkClass}>
-          <BarChart2 size={20} /> Progress
-        </button>
-        <button onClick={()=>{navigate('/exercises')}} className={linkClass}>
-          <BarChart2 size={20} /> Exercises
-        </button>
-        <button onClick={()=>{navigate('/profile')}} className={linkClass}>
-          <BarChart2 size={20} /> Profile
-        </button>
-        
+      <div className="flex justify-center gap-10 py-3">
+        {links.map(({ to, label, icon: Icon }) => (
+          <button
+            key={to}
+            onClick={() => navigate(to)}
+            className={`${linkClass} ${location.pathname === to ? activeClass : inactiveClass}`}
+          >
+            <Icon size={20} /> {label}
+          </button>
+        ))}
       </div>
     </div>
   );
