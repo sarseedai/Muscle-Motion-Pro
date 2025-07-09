@@ -24,3 +24,4 @@
 - Lucide react icons - for icons [Link](https://lucide.dev/guide/packages/lucide-react)
 - Recharts - for piecharts and barcharts - [Link](https://www.npmjs.com/package/recharts)
 - Pangea - for drag and drop - [Link](https://www.npmjs.com/package/@hello-pangea/dnd)
+- Toastify - for showing toast notifications - [Link] (https://www.npmjs.com/package/react-toastify)
