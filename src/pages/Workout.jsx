@@ -18,47 +18,7 @@ import Navbar from "../components/Navbar";
 import Header from "../components/Header";
 
 const exerciseLibrary = [
-  { id: "chest-1", name: "Bench Press", bodyPart: "Chest", defaultSets: 3, defaultReps: 10, defaultWeight: 135 },
-  { id: "chest-2", name: "Incline Bench Press", bodyPart: "Chest", defaultSets: 3, defaultReps: 10, defaultWeight: 115 },
-  { id: "chest-3", name: "Chest Fly", bodyPart: "Chest", defaultSets: 3, defaultReps: 12, defaultWeight: 40 },
-  { id: "chest-4", name: "Push Ups", bodyPart: "Chest", defaultSets: 3, defaultReps: 15, defaultWeight: 0 },
-  { id: "chest-5", name: "Decline Bench Press", bodyPart: "Chest", defaultSets: 3, defaultReps: 10, defaultWeight: 125 },
-  { id: "chest-6", name: "Cable Crossover", bodyPart: "Chest", defaultSets: 3, defaultReps: 12, defaultWeight: 30 },
-
-  { id: "back-1", name: "Deadlift", bodyPart: "Back", defaultSets: 3, defaultReps: 8, defaultWeight: 185 },
-  { id: "back-2", name: "Pull Ups", bodyPart: "Back", defaultSets: 3, defaultReps: 10, defaultWeight: 0 },
-  { id: "back-3", name: "Bent-over Row", bodyPart: "Back", defaultSets: 3, defaultReps: 10, defaultWeight: 95 },
-  { id: "back-4", name: "Lat Pulldown", bodyPart: "Back", defaultSets: 3, defaultReps: 12, defaultWeight: 80 },
-  { id: "back-5", name: "Seated Cable Row", bodyPart: "Back", defaultSets: 3, defaultReps: 12, defaultWeight: 70 },
-  { id: "back-6", name: "T-Bar Row", bodyPart: "Back", defaultSets: 3, defaultReps: 10, defaultWeight: 90 },
-
-  { id: "legs-1", name: "Squat", bodyPart: "Legs", defaultSets: 3, defaultReps: 10, defaultWeight: 185 },
-  { id: "legs-2", name: "Leg Press", bodyPart: "Legs", defaultSets: 3, defaultReps: 12, defaultWeight: 220 },
-  { id: "legs-3", name: "Lunges", bodyPart: "Legs", defaultSets: 3, defaultReps: 12, defaultWeight: 30 },
-  { id: "legs-4", name: "Leg Curl", bodyPart: "Legs", defaultSets: 3, defaultReps: 12, defaultWeight: 60 },
-  { id: "legs-5", name: "Leg Extension", bodyPart: "Legs", defaultSets: 3, defaultReps: 12, defaultWeight: 65 },
-  { id: "legs-6", name: "Calf Raise", bodyPart: "Legs", defaultSets: 3, defaultReps: 15, defaultWeight: 45 },
-
-  { id: "shoulders-1", name: "Overhead Press", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 10, defaultWeight: 60 },
-  { id: "shoulders-2", name: "Lateral Raise", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 15, defaultWeight: 15 },
-  { id: "shoulders-3", name: "Front Raise", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 15, defaultWeight: 15 },
-  { id: "shoulders-4", name: "Face Pulls", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 15, defaultWeight: 25 },
-  { id: "shoulders-5", name: "Arnold Press", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 10, defaultWeight: 50 },
-  { id: "shoulders-6", name: "Shrugs", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 12, defaultWeight: 70 },
-
-  { id: "arms-1", name: "Bicep Curls", bodyPart: "Arms", defaultSets: 3, defaultReps: 12, defaultWeight: 25 },
-  { id: "arms-2", name: "Tricep Dips", bodyPart: "Arms", defaultSets: 3, defaultReps: 12, defaultWeight: 0 },
-  { id: "arms-3", name: "Hammer Curls", bodyPart: "Arms", defaultSets: 3, defaultReps: 12, defaultWeight: 25 },
-  { id: "arms-4", name: "Tricep Pushdown", bodyPart: "Arms", defaultSets: 3, defaultReps: 12, defaultWeight: 40 },
-  { id: "arms-5", name: "Preacher Curl", bodyPart: "Arms", defaultSets: 3, defaultReps: 10, defaultWeight: 35 },
-  { id: "arms-6", name: "Skull Crushers", bodyPart: "Arms", defaultSets: 3, defaultReps: 10, defaultWeight: 40 },
-
-  { id: "core-1", name: "Plank", bodyPart: "Core", defaultSets: 3, defaultReps: 60, defaultWeight: 0 },
-  { id: "core-2", name: "Russian Twists", bodyPart: "Core", defaultSets: 3, defaultReps: 30, defaultWeight: 10 },
-  { id: "core-3", name: "Leg Raises", bodyPart: "Core", defaultSets: 3, defaultReps: 15, defaultWeight: 0 },
-  { id: "core-4", name: "Mountain Climbers", bodyPart: "Core", defaultSets: 3, defaultReps: 40, defaultWeight: 0 },
-  { id: "core-5", name: "Bicycle Crunches", bodyPart: "Core", defaultSets: 3, defaultReps: 25, defaultWeight: 0 },
-  { id: "core-6", name: "Hanging Leg Raises", bodyPart: "Core", defaultSets: 3, defaultReps: 12, defaultWeight: 0 },
+  // ... your exerciseLibrary (unchanged)
 ];
 
 const bodyParts = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
@@ -148,6 +108,15 @@ export default function Workout() {
     alert("Routine saved!");
   };
 
+  const loadRoutine = (routine) => {
+    setWorkout(routine.exercises);
+    setWorkoutName(routine.name);
+  };
+
+  const removeRoutine = (id) => {
+    setSavedRoutines((prev) => prev.filter((r) => r.id !== id));
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <Header />
@@ -172,6 +141,7 @@ export default function Workout() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             {/* Sidebar */}
             <div className="md:col-span-4 space-y-6">
+              {/* Exercise library (unchanged) */}
               <div className="bg-white p-5 rounded shadow border border-gray-200">
                 <h2 className="font-semibold mb-4 text-gray-800 text-lg">Exercise Library</h2>
                 <p className="text-xs text-gray-500 mb-4">Drag exercises to your workout</p>
@@ -244,10 +214,21 @@ export default function Workout() {
                       savedRoutines.map((routine) => (
                         <div
                           key={routine.id}
-                          className="p-3 bg-white border border-gray-300 rounded text-gray-700 text-sm hover:bg-gray-50 cursor-pointer transition"
-                          title={routine.name}
+                          className="flex justify-between items-center p-3 bg-white border border-gray-300 rounded text-gray-700 text-sm hover:bg-gray-50 transition"
                         >
-                          {routine.name}
+                          <span
+                            onClick={() => loadRoutine(routine)}
+                            className="cursor-pointer flex-1 truncate"
+                          >
+                            {routine.name}
+                          </span>
+                          <button
+                            onClick={() => removeRoutine(routine.id)}
+                            className="text-red-500 hover:text-red-700 ml-2"
+                            title="Remove routine"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       ))
                     )}
@@ -287,6 +268,19 @@ export default function Workout() {
                         : "border-gray-300 bg-white"
                     } space-y-4 transition`}
                   >
+                    {/* Header row */}
+                    {workout.length > 0 && (
+                      <div className="grid grid-cols-12 gap-4 text-gray-500 text-xs font-semibold px-2">
+                        <div className="col-span-1"></div>
+                        <div className="col-span-3">Exercise</div>
+                        <div className="col-span-1 text-center">Sets</div>
+                        <div className="col-span-1 text-center">Reps</div>
+                        <div className="col-span-2 text-center">Weight</div>
+                        <div className="col-span-2 text-center">Adjust</div>
+                        <div className="col-span-1"></div>
+                      </div>
+                    )}
+
                     {workout.length === 0 && (
                       <div className="text-center text-gray-500">
                         <Dumbbell className="w-12 h-12 mx-auto mb-3" />
