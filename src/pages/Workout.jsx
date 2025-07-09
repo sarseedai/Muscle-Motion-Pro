@@ -1,248 +1,337 @@
+"use client";
+
 import React, { useState } from "react";
-import Header from "../components/Header";
-import Navbar from "../components/Navbar";
-import { Plus, Trash2, Play, Clock } from "lucide-react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import {
+  Trash2,
+  GripVertical,
+  Clock,
+  Flame,
+  Dumbbell,
+  ChevronRight,
+  ChevronDown,
+  Plus,
+  Minus
+} from "lucide-react";
 import Timer from "../components/Timer";
+import Navbar from "../components/Navbar";
+import Header from "../components/Header";
 
-export default function WorkoutBuilder() {
-  const [workoutName, setWorkoutName] = useState("Push Day");
-  const [exercises, setExercises] = useState([
-    {
-      id: "1",
-      name: "Bench Press",
-      sets: [
-        { reps: 10, weight: 60, completed: false },
-        { reps: 8, weight: 70, completed: false },
-        { reps: 6, weight: 80, completed: false },
-      ],
-    },
-  ]);
-  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
+const exerciseLibrary = [
+  { id: "chest-1", name: "Bench Press", bodyPart: "Chest", defaultSets: 3, defaultReps: 10, defaultWeight: 135 },
+  { id: "chest-2", name: "Incline Bench Press", bodyPart: "Chest", defaultSets: 3, defaultReps: 10, defaultWeight: 115 },
+  { id: "chest-3", name: "Chest Fly", bodyPart: "Chest", defaultSets: 3, defaultReps: 12, defaultWeight: 40 },
+  { id: "chest-4", name: "Push Ups", bodyPart: "Chest", defaultSets: 3, defaultReps: 15, defaultWeight: 0 },
+  { id: "chest-5", name: "Decline Bench Press", bodyPart: "Chest", defaultSets: 3, defaultReps: 10, defaultWeight: 125 },
+  { id: "chest-6", name: "Cable Crossover", bodyPart: "Chest", defaultSets: 3, defaultReps: 12, defaultWeight: 30 },
+
+  { id: "back-1", name: "Deadlift", bodyPart: "Back", defaultSets: 3, defaultReps: 8, defaultWeight: 185 },
+  { id: "back-2", name: "Pull Ups", bodyPart: "Back", defaultSets: 3, defaultReps: 10, defaultWeight: 0 },
+  { id: "back-3", name: "Bent-over Row", bodyPart: "Back", defaultSets: 3, defaultReps: 10, defaultWeight: 95 },
+  { id: "back-4", name: "Lat Pulldown", bodyPart: "Back", defaultSets: 3, defaultReps: 12, defaultWeight: 80 },
+  { id: "back-5", name: "Seated Cable Row", bodyPart: "Back", defaultSets: 3, defaultReps: 12, defaultWeight: 70 },
+  { id: "back-6", name: "T-Bar Row", bodyPart: "Back", defaultSets: 3, defaultReps: 10, defaultWeight: 90 },
+
+  { id: "legs-1", name: "Squat", bodyPart: "Legs", defaultSets: 3, defaultReps: 10, defaultWeight: 185 },
+  { id: "legs-2", name: "Leg Press", bodyPart: "Legs", defaultSets: 3, defaultReps: 12, defaultWeight: 220 },
+  { id: "legs-3", name: "Lunges", bodyPart: "Legs", defaultSets: 3, defaultReps: 12, defaultWeight: 30 },
+  { id: "legs-4", name: "Leg Curl", bodyPart: "Legs", defaultSets: 3, defaultReps: 12, defaultWeight: 60 },
+  { id: "legs-5", name: "Leg Extension", bodyPart: "Legs", defaultSets: 3, defaultReps: 12, defaultWeight: 65 },
+  { id: "legs-6", name: "Calf Raise", bodyPart: "Legs", defaultSets: 3, defaultReps: 15, defaultWeight: 45 },
+
+  { id: "shoulders-1", name: "Overhead Press", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 10, defaultWeight: 60 },
+  { id: "shoulders-2", name: "Lateral Raise", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 15, defaultWeight: 15 },
+  { id: "shoulders-3", name: "Front Raise", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 15, defaultWeight: 15 },
+  { id: "shoulders-4", name: "Face Pulls", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 15, defaultWeight: 25 },
+  { id: "shoulders-5", name: "Arnold Press", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 10, defaultWeight: 50 },
+  { id: "shoulders-6", name: "Shrugs", bodyPart: "Shoulders", defaultSets: 3, defaultReps: 12, defaultWeight: 70 },
+
+  { id: "arms-1", name: "Bicep Curls", bodyPart: "Arms", defaultSets: 3, defaultReps: 12, defaultWeight: 25 },
+  { id: "arms-2", name: "Tricep Dips", bodyPart: "Arms", defaultSets: 3, defaultReps: 12, defaultWeight: 0 },
+  { id: "arms-3", name: "Hammer Curls", bodyPart: "Arms", defaultSets: 3, defaultReps: 12, defaultWeight: 25 },
+  { id: "arms-4", name: "Tricep Pushdown", bodyPart: "Arms", defaultSets: 3, defaultReps: 12, defaultWeight: 40 },
+  { id: "arms-5", name: "Preacher Curl", bodyPart: "Arms", defaultSets: 3, defaultReps: 10, defaultWeight: 35 },
+  { id: "arms-6", name: "Skull Crushers", bodyPart: "Arms", defaultSets: 3, defaultReps: 10, defaultWeight: 40 },
+
+  { id: "core-1", name: "Plank", bodyPart: "Core", defaultSets: 3, defaultReps: 60, defaultWeight: 0 },
+  { id: "core-2", name: "Russian Twists", bodyPart: "Core", defaultSets: 3, defaultReps: 30, defaultWeight: 10 },
+  { id: "core-3", name: "Leg Raises", bodyPart: "Core", defaultSets: 3, defaultReps: 15, defaultWeight: 0 },
+  { id: "core-4", name: "Mountain Climbers", bodyPart: "Core", defaultSets: 3, defaultReps: 40, defaultWeight: 0 },
+  { id: "core-5", name: "Bicycle Crunches", bodyPart: "Core", defaultSets: 3, defaultReps: 25, defaultWeight: 0 },
+  { id: "core-6", name: "Hanging Leg Raises", bodyPart: "Core", defaultSets: 3, defaultReps: 12, defaultWeight: 0 },
+];
+
+
+const bodyParts = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
+
+export default function Workout() {
+  const [workoutName, setWorkoutName] = useState("");
   const [showTimer, setShowTimer] = useState(false);
+  const [collapsedParts, setCollapsedParts] = useState([...bodyParts]);
+  const [workout, setWorkout] = useState([]);
 
-  const addExercise = () => {
-    const newExercise = {
-      id: Date.now().toString(),
-      name: "New Exercise",
-      sets: [{ reps: 10, weight: 0, completed: false }],
-    };
-    setExercises([...exercises, newExercise]);
-  };
-
-  const addSet = (exerciseId) => {
-    setExercises(
-      exercises.map((exercise) =>
-        exercise.id === exerciseId
-          ? {
-              ...exercise,
-              sets: [...exercise.sets, { reps: 10, weight: 0, completed: false }],
-            }
-          : exercise
-      )
+  const togglePart = (part) => {
+    setCollapsedParts((prev) =>
+      prev.includes(part) ? prev.filter((p) => p !== part) : [...prev, part]
     );
   };
 
-  const updateSet = (exerciseId, setIndex, field, value) => {
-    setExercises(
-      exercises.map((exercise) =>
-        exercise.id === exerciseId
-          ? {
-              ...exercise,
-              sets: exercise.sets.map((set, idx) =>
-                idx === setIndex ? { ...set, [field]: value } : set
-              ),
-            }
-          : exercise
-      )
-    );
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+    const { source, destination, draggableId } = result;
+
+    if (source.droppableId !== "workout" && destination.droppableId === "workout") {
+      const template = exerciseLibrary.find((ex) => ex.id === draggableId);
+      if (template) {
+        const newItem = {
+          id: draggableId + Date.now(),
+          name: template.name,
+          bodyPart: template.bodyPart,
+          sets: template.defaultSets,
+          reps: template.defaultReps,
+          weight: template.defaultWeight,
+          restMinutes: 1,
+          restSeconds: 30,
+        };
+        const updated = Array.from(workout);
+        updated.splice(destination.index, 0, newItem);
+        setWorkout(updated);
+      }
+    } else if (source.droppableId === "workout" && destination.droppableId === "workout") {
+      const updated = Array.from(workout);
+      const [moved] = updated.splice(source.index, 1);
+      updated.splice(destination.index, 0, moved);
+      setWorkout(updated);
+    }
   };
 
-  const toggleSetCompleted = (exerciseId, setIndex) => {
-    setExercises(
-      exercises.map((exercise) =>
-        exercise.id === exerciseId
-          ? {
-              ...exercise,
-              sets: exercise.sets.map((set, idx) =>
-                idx === setIndex ? { ...set, completed: !set.completed } : set
-              ),
-            }
-          : exercise
-      )
-    );
-    if (!showTimer) setShowTimer(true);
-  };
+  const removeExercise = (id) => setWorkout(workout.filter((ex) => ex.id !== id));
+  const updateField = (id, field, value) =>
+    setWorkout(workout.map((ex) => (ex.id === id ? { ...ex, [field]: value } : ex)));
 
-  const removeExercise = (exerciseId) => {
-    setExercises(exercises.filter((exercise) => exercise.id !== exerciseId));
-  };
+  const addSet = (id) =>
+    setWorkout(workout.map((ex) => (ex.id === id ? { ...ex, sets: ex.sets + 1 } : ex)));
 
-  const startWorkout = () => {
-    setIsWorkoutActive(true);
-  };
+  const removeSet = (id) =>
+    setWorkout(workout.map((ex) => (ex.id === id && ex.sets > 1 ? { ...ex, sets: ex.sets - 1 } : ex)));
 
-  const endWorkout = () => {
-    setIsWorkoutActive(false);
-    setShowTimer(false);
-    console.log("Workout completed:", { workoutName, exercises });
-  };
+  const totalDuration = workout.reduce(
+    (total, ex) => total + ex.sets * 2 + ex.sets * (ex.restMinutes + ex.restSeconds / 60),
+    0
+  );
+  const totalCalories = workout.reduce((total, ex) => total + ex.sets * ex.reps * 0.5, 0);
 
   return (
-    <div>
+    <div className="bg-gray-50 min-h-screen">
       <Header />
       <Navbar />
-
-      <div className="p-4 max-w-7xl mx-auto space-y-6">
-        {/* Workout Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">{workoutName}</h1>
-            <p className="text-gray-600">Build and track your custom workout</p>
-          </div>
-          <div className="flex gap-2">
-            {!isWorkoutActive ? (
-              <button
-                onClick={startWorkout}
-                className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
-              >
-                <Play className="w-5 h-5 mr-2" />
-                Start Workout
-              </button>
-            ) : (
-              <button
-                onClick={endWorkout}
-                className="inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-              >
-                End Workout
-              </button>
-            )}
-          </div>
+      <div className="mx-auto px-4 md:px-6 lg:px-8 space-y-8 max-w-none">
+        <div className="flex justify-between items-center">
+          <h1 className="text-4xl font-semibold text-gray-900">Workout Builder</h1>
+          <button
+            onClick={() => setShowTimer(!showTimer)}
+            className="flex items-center space-x-2 bg-indigo-600 text-white px-5 py-3 rounded hover:bg-indigo-700 transition"
+          >
+            <Clock className="w-5 h-5" />
+            <span className="text-lg">{showTimer ? "Hide Timer" : "Show Timer"}</span>
+          </button>
         </div>
 
-        {showTimer && (
-          <div className="mb-6">
-            <Timer />
-          </div>
-        )}
+        {showTimer && <Timer />}
 
-        {/* Exercises List */}
-        <div className="space-y-6">
-          {exercises.map((exercise, exerciseIndex) => (
-            <div
-              key={exercise.id}
-              className="bg-white shadow rounded-lg p-6 border border-gray-200"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md font-semibold">
-                    {exerciseIndex + 1}
-                  </span>
-                  <input
-                    type="text"
-                    value={exercise.name}
-                    onChange={(e) => {
-                      const newExercises = [...exercises];
-                      newExercises[exerciseIndex].name = e.target.value;
-                      setExercises(newExercises);
-                    }}
-                    className="text-lg font-semibold border border-gray-300 rounded-md px-3 py-1"
-                  />
-                </div>
-                <button
-                  onClick={() => removeExercise(exercise.id)}
-                  className="text-red-600 hover:text-red-800 transition"
-                  aria-label="Remove exercise"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Sets Header */}
-              <div className="grid grid-cols-4 gap-4 mb-2 text-sm font-semibold text-gray-600">
-                <div>Set</div>
-                <div>Reps</div>
-                <div>Weight (kg)</div>
-                <div>Complete</div>
-              </div>
-
-              {/* Sets */}
-              <div className="space-y-3">
-                {exercise.sets.map((set, setIndex) => (
-                  <div
-                    key={setIndex}
-                    className="grid grid-cols-4 gap-4 items-center"
-                  >
-                    <div
-                      className={`px-2 py-1 rounded-md font-medium ${
-                        set.completed
-                          ? "bg-green-200 text-green-800"
-                          : "bg-gray-200 text-gray-700"
-                      }`}
-                    >
-                      Set {setIndex + 1}
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            {/* Sidebar */}
+            <div className="md:col-span-4">
+              <div className="bg-white p-5 rounded shadow border border-gray-200">
+                <h2 className="font-semibold mb-4 text-gray-800 text-lg">Exercise Library</h2>
+                <p className="text-xs text-gray-500 mb-4">Drag exercises to your workout</p>
+                <div className="space-y-3">
+                  {bodyParts.map((part) => (
+                    <div key={part} className="bg-gray-50 border rounded border-gray-200">
+                      <button
+                        onClick={() => togglePart(part)}
+                        className="w-full flex justify-between items-center px-4 py-3 text-left text-gray-700 hover:bg-gray-100 transition font-medium"
+                      >
+                        <span>{part}</span>
+                        {collapsedParts.includes(part) ? (
+                          <ChevronRight className="w-5 h-5" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5" />
+                        )}
+                      </button>
+                      {!collapsedParts.includes(part) && (
+                        <Droppable droppableId={`library-${part}`} isDropDisabled={true}>
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.droppableProps}
+                              className="p-2 space-y-2 max-h-72 overflow-y-auto"
+                            >
+                              {exerciseLibrary
+                                .filter((ex) => ex.bodyPart === part)
+                                .map((ex, idx) => (
+                                  <Draggable key={ex.id} draggableId={ex.id} index={idx}>
+                                    {(prov) => (
+                                      <div
+                                        ref={prov.innerRef}
+                                        {...prov.draggableProps}
+                                        {...prov.dragHandleProps}
+                                        className="p-3 bg-white border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-100 cursor-grab transition"
+                                      >
+                                        {ex.name}
+                                      </div>
+                                    )}
+                                  </Draggable>
+                                ))}
+                              {provided.placeholder}
+                            </div>
+                          )}
+                        </Droppable>
+                      )}
                     </div>
-                    <input
-                      type="number"
-                      min={0}
-                      value={set.reps}
-                      onChange={(e) =>
-                        updateSet(
-                          exercise.id,
-                          setIndex,
-                          "reps",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      className="text-center border border-gray-300 rounded-md px-2 py-1"
-                    />
-                    <input
-                      type="number"
-                      min={0}
-                      value={set.weight}
-                      onChange={(e) =>
-                        updateSet(
-                          exercise.id,
-                          setIndex,
-                          "weight",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      className="text-center border border-gray-300 rounded-md px-2 py-1"
-                    />
-                    <button
-                      onClick={() => toggleSetCompleted(exercise.id, setIndex)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                        set.completed
-                          ? "bg-green-600 text-white"
-                          : "border border-gray-400 text-gray-700"
-                      }`}
-                    >
-                      {set.completed ? "✓" : "○"}
-                    </button>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Main content */}
+            <div className="md:col-span-8 space-y-6">
+              <input
+                type="text"
+                value={workoutName}
+                onChange={(e) => setWorkoutName(e.target.value)}
+                placeholder="Enter workout name..."
+                className="w-full px-5 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg"
+              />
+              <div className="flex justify-between text-gray-600 text-base font-medium">
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-5 h-5" />
+                  <span>{Math.round(totalDuration)} min</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Flame className="w-5 h-5" />
+                  <span>{Math.round(totalCalories)} cal</span>
+                </div>
               </div>
 
-              <button
-                onClick={() => addSet(exercise.id)}
-                className="mt-4 w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-md font-semibold"
-              >
-                <Plus className="inline w-5 h-5 mr-2" />
-                Add Set
-              </button>
-            </div>
-          ))}
+              <Droppable droppableId="workout">
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={`min-h-[300px] p-5 border-2 rounded ${
+                      snapshot.isDraggingOver
+                        ? "border-indigo-400 bg-indigo-50"
+                        : "border-gray-300 bg-white"
+                    } space-y-4 transition`}
+                  >
+                    {workout.length === 0 && (
+                      <div className="text-center text-gray-500">
+                        <Dumbbell className="w-12 h-12 mx-auto mb-3" />
+                        <p className="text-lg">Drag exercises here to build your workout</p>
+                      </div>
+                    )}
 
-          <div className="border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-600 transition-colors">
-            <button
-              onClick={addExercise}
-              className="w-full py-8 text-gray-600 hover:text-purple-700 font-semibold"
-            >
-              <Plus className="inline w-6 h-6 mr-2" />
-              Add Exercise
-            </button>
+                    {workout.map((ex, idx) => (
+                      <Draggable key={ex.id} draggableId={ex.id} index={idx}>
+                        {(prov) => (
+                          <div
+                            ref={prov.innerRef}
+                            {...prov.draggableProps}
+                            className="bg-gray-50 border border-gray-200 rounded p-3 shadow-sm space-y-2"
+                          >
+                            <div className="grid grid-cols-12 gap-4 items-center">
+                              <div {...prov.dragHandleProps} className="col-span-1 text-gray-400 cursor-grab flex justify-center">
+                                <GripVertical className="w-5 h-5" />
+                              </div>
+                              <div className="col-span-3">
+                                <div className="font-medium text-gray-900">{ex.name}</div>
+                                <div className="text-xs text-gray-500">{ex.bodyPart}</div>
+                              </div>
+                              <input
+                                type="number"
+                                value={ex.sets}
+                                min={1}
+                                onChange={(e) => updateField(ex.id, "sets", +e.target.value)}
+                                className="col-span-1 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                              />
+                              <input
+                                type="number"
+                                value={ex.reps}
+                                min={1}
+                                onChange={(e) => updateField(ex.id, "reps", +e.target.value)}
+                                className="col-span-1 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                              />
+                              <input
+                                type="number"
+                                value={ex.weight}
+                                min={0}
+                                onChange={(e) => updateField(ex.id, "weight", +e.target.value)}
+                                className="col-span-2 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                              />
+                              <div className="col-span-2 flex space-x-2 justify-center">
+                                <input
+                                  type="number"
+                                  value={ex.restMinutes}
+                                  min={0}
+                                  onChange={(e) => updateField(ex.id, "restMinutes", +e.target.value)}
+                                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-center focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                  placeholder="min"
+                                />
+                                <input
+                                  type="number"
+                                  value={ex.restSeconds}
+                                  min={0}
+                                  max={59}
+                                  onChange={(e) => updateField(ex.id, "restSeconds", +e.target.value)}
+                                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-center focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                  placeholder="sec"
+                                />
+                              </div>
+                              <button
+                                onClick={() => removeExercise(ex.id)}
+                                className="col-span-1 text-red-500 hover:text-red-700 flex justify-center"
+                                aria-label="Remove exercise"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </div>
+                            {/* Add/Remove set buttons below */}
+                            <div className="flex justify-end space-x-2 mt-2">
+  <button
+    onClick={() => addSet(ex.id)}
+    className="flex items-center justify-center space-x-1 px-3 py-1 border border-green-500 text-green-600 rounded hover:bg-green-50 text-sm font-medium transition"
+  >
+    <Plus className="w-4 h-4" />
+    <span>Add Set</span>
+  </button>
+  <button
+    onClick={() => removeSet(ex.id)}
+    className="flex items-center justify-center space-x-1 px-3 py-1 border border-red-500 text-red-500 rounded hover:bg-red-50 text-sm font-medium transition"
+  >
+    <Minus className="w-4 h-4" />
+    <span>Remove Set</span>
+  </button>
+</div>
+
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+
+              {workout.length > 0 && (
+                <button className="w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700 transition text-lg font-semibold">
+                  Save Workout
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        </DragDropContext>
       </div>
     </div>
   );

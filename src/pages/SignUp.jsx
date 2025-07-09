@@ -8,7 +8,9 @@ import Header from '../components/Header';
 const SignUp = () => {
   const navigate = useNavigate();
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-100 px-4">
+    <div className="flex h-screen items-center justify-center">
+      <div>hello left side code here </div>
+    <div className="flex items-center justify-center px-4">
       <div className="flex flex-col md:flex-row items-center gap-12 bg-white rounded-3xl shadow-2xl p-8">
         <div className="w-40 md:w-60">
         
@@ -39,6 +41,8 @@ const SignUp = () => {
               </NavLink>
             </p>
           </div>
+    </div>
+
       </div>
     </div>
   );
