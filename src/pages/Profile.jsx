@@ -38,7 +38,7 @@ const UserProfile = () => {
     <>
       <Header />
       <Navbar />
-      <div className="max-w-[1650px] mx-auto p-6 space-y-6">
+      <div className="max-w-[1650px] mx-auto px-2 py-4 space-y-6">
         <div className="flex items-center gap-6 bg-white rounded-2xl p-6 shadow-md">
           <img
             src={profilePic}
@@ -67,13 +67,13 @@ const UserProfile = () => {
                 {personalBests.map((record, idx) => (
                   <div
                     key={idx}
-                    className="flex justify-between items-center bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-3"
+                    className="flex justify-between items-center bg-purple-100 rounded-lg p-3"
                   >
                     <div>
                       <h4 className="font-semibold">{record.exercise}</h4>
                       <p className="text-sm text-gray-500">{record.date}</p>
                     </div>
-                    <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full px-3 py-1 font-semibold">
+                    <div className="bg-purple-600 text-white rounded-full px-3 py-1 font-semibold">
                       {record.weight} kg
                     </div>
                   </div>

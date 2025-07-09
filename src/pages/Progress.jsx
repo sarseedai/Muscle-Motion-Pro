@@ -44,7 +44,8 @@ export default function Progress() {
     <div>
       <Header />
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      {/* Use almost full width with minimal horizontal padding */}
+      <div className="max-w-[98vw] mx-auto px-1 py-6 space-y-6">
         <div>
           <h2 className="text-2xl font-bold mb-1">Progress Overview</h2>
           <p className="text-gray-600">Track your fitness journey and celebrate improvements</p>
@@ -93,12 +94,12 @@ export default function Progress() {
           </button>
         </div>
 
-        <div className="bg-white rounded-md p-4 shadow">
+        <div className="bg-white rounded-md p-6 shadow">
           {activeTab === "strength" && (
             <div>
               <h3 className="text-lg font-semibold mb-2">Strength Progress</h3>
               <p className="text-gray-600 mb-4">Track your main lift improvements over time</p>
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height={360}>
                 <LineChart data={strengthData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
@@ -116,7 +117,7 @@ export default function Progress() {
             <div>
               <h3 className="text-lg font-semibold mb-2">Body Metrics</h3>
               <p className="text-gray-600 mb-4">Monitor your body measurements and composition</p>
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height={360}>
                 <LineChart data={bodyMetricsData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
@@ -133,7 +134,7 @@ export default function Progress() {
             <div>
               <h3 className="text-lg font-semibold mb-2">Weight Progress</h3>
               <p className="text-gray-600 mb-4">See how your weight has changed over time</p>
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height={360}>
                 <LineChart data={weightData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
