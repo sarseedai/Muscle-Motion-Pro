@@ -11,7 +11,7 @@ import {
   ChevronRight,
   ChevronDown,
   Plus,
-  Minus
+  Minus,
 } from "lucide-react";
 import Timer from "../components/Timer";
 import Navbar from "../components/Navbar";
@@ -61,19 +61,24 @@ const exerciseLibrary = [
   { id: "core-6", name: "Hanging Leg Raises", bodyPart: "Core", defaultSets: 3, defaultReps: 12, defaultWeight: 0 },
 ];
 
-
 const bodyParts = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
 
 export default function Workout() {
   const [workoutName, setWorkoutName] = useState("");
   const [showTimer, setShowTimer] = useState(false);
   const [collapsedParts, setCollapsedParts] = useState([...bodyParts]);
+  const [collapsedRoutines, setCollapsedRoutines] = useState(true);
   const [workout, setWorkout] = useState([]);
+  const [savedRoutines, setSavedRoutines] = useState([]);
 
   const togglePart = (part) => {
     setCollapsedParts((prev) =>
       prev.includes(part) ? prev.filter((p) => p !== part) : [...prev, part]
     );
+  };
+
+  const toggleRoutines = () => {
+    setCollapsedRoutines((prev) => !prev);
   };
 
   const onDragEnd = (result) => {
@@ -121,13 +126,37 @@ export default function Workout() {
   );
   const totalCalories = workout.reduce((total, ex) => total + ex.sets * ex.reps * 0.5, 0);
 
+  const saveCurrentRoutine = () => {
+    if (!workoutName.trim()) {
+      alert("Please enter a workout name before saving.");
+      return;
+    }
+    if (workout.length === 0) {
+      alert("Add some exercises before saving.");
+      return;
+    }
+
+    const routine = {
+      id: "routine-" + Date.now(),
+      name: workoutName.trim(),
+      exercises: workout,
+    };
+
+    setSavedRoutines((prev) => [routine, ...prev]);
+    setWorkoutName("");
+    setWorkout([]);
+    alert("Routine saved!");
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <Header />
       <Navbar />
       <div className="mx-auto px-4 md:px-6 lg:px-8 space-y-8 max-w-none">
         <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-semibold text-gray-900">Workout Builder</h1>
+          <h1 className="text-4xl font-extrabold text-indigo-700 tracking-wide drop-shadow-md select-none">
+            Workout Builder
+          </h1>
           <button
             onClick={() => setShowTimer(!showTimer)}
             className="flex items-center space-x-2 bg-indigo-600 text-white px-5 py-3 rounded hover:bg-indigo-700 transition"
@@ -142,7 +171,7 @@ export default function Workout() {
         <DragDropContext onDragEnd={onDragEnd}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             {/* Sidebar */}
-            <div className="md:col-span-4">
+            <div className="md:col-span-4 space-y-6">
               <div className="bg-white p-5 rounded shadow border border-gray-200">
                 <h2 className="font-semibold mb-4 text-gray-800 text-lg">Exercise Library</h2>
                 <p className="text-xs text-gray-500 mb-4">Drag exercises to your workout</p>
@@ -193,6 +222,38 @@ export default function Workout() {
                   ))}
                 </div>
               </div>
+
+              {/* Saved Routines Section */}
+              <div className="bg-white p-5 rounded shadow border border-gray-200">
+                <button
+                  onClick={toggleRoutines}
+                  className="w-full flex justify-between items-center px-4 py-3 text-left text-gray-700 hover:bg-gray-100 transition font-semibold text-lg"
+                >
+                  <span>Saved Routines</span>
+                  {collapsedRoutines ? (
+                    <ChevronRight className="w-5 h-5" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5" />
+                  )}
+                </button>
+                {!collapsedRoutines && (
+                  <div className="mt-2 space-y-2 max-h-56 overflow-y-auto">
+                    {savedRoutines.length === 0 ? (
+                      <p className="text-gray-500 text-sm italic px-2">No saved routines.</p>
+                    ) : (
+                      savedRoutines.map((routine) => (
+                        <div
+                          key={routine.id}
+                          className="p-3 bg-white border border-gray-300 rounded text-gray-700 text-sm hover:bg-gray-50 cursor-pointer transition"
+                          title={routine.name}
+                        >
+                          {routine.name}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Main content */}
@@ -242,7 +303,10 @@ export default function Workout() {
                             className="bg-gray-50 border border-gray-200 rounded p-3 shadow-sm space-y-2"
                           >
                             <div className="grid grid-cols-12 gap-4 items-center">
-                              <div {...prov.dragHandleProps} className="col-span-1 text-gray-400 cursor-grab flex justify-center">
+                              <div
+                                {...prov.dragHandleProps}
+                                className="col-span-1 text-gray-400 cursor-grab flex justify-center"
+                              >
                                 <GripVertical className="w-5 h-5" />
                               </div>
                               <div className="col-span-3">
@@ -270,65 +334,44 @@ export default function Workout() {
                                 onChange={(e) => updateField(ex.id, "weight", +e.target.value)}
                                 className="col-span-2 text-center border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                               />
-                              <div className="col-span-2 flex space-x-2 justify-center">
-                                <input
-                                  type="number"
-                                  value={ex.restMinutes}
-                                  min={0}
-                                  onChange={(e) => updateField(ex.id, "restMinutes", +e.target.value)}
-                                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-center focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                                  placeholder="min"
-                                />
-                                <input
-                                  type="number"
-                                  value={ex.restSeconds}
-                                  min={0}
-                                  max={59}
-                                  onChange={(e) => updateField(ex.id, "restSeconds", +e.target.value)}
-                                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-center focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                                  placeholder="sec"
-                                />
+                              <div className="col-span-2 flex items-center space-x-1">
+                                <button
+                                  onClick={() => removeSet(ex.id)}
+                                  className="bg-red-200 hover:bg-red-300 text-red-800 rounded px-2 py-1"
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => addSet(ex.id)}
+                                  className="bg-green-200 hover:bg-green-300 text-green-800 rounded px-2 py-1"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </button>
                               </div>
                               <button
                                 onClick={() => removeExercise(ex.id)}
-                                className="col-span-1 text-red-500 hover:text-red-700 flex justify-center"
-                                aria-label="Remove exercise"
+                                className="col-span-1 text-red-600 hover:text-red-800 flex justify-center"
+                                title="Remove exercise"
                               >
                                 <Trash2 className="w-5 h-5" />
                               </button>
                             </div>
-                            {/* Add/Remove set buttons below */}
-                            <div className="flex justify-end space-x-2 mt-2">
-  <button
-    onClick={() => addSet(ex.id)}
-    className="flex items-center justify-center space-x-1 px-3 py-1 border border-green-500 text-green-600 rounded hover:bg-green-50 text-sm font-medium transition"
-  >
-    <Plus className="w-4 h-4" />
-    <span>Add Set</span>
-  </button>
-  <button
-    onClick={() => removeSet(ex.id)}
-    className="flex items-center justify-center space-x-1 px-3 py-1 border border-red-500 text-red-500 rounded hover:bg-red-50 text-sm font-medium transition"
-  >
-    <Minus className="w-4 h-4" />
-    <span>Remove Set</span>
-  </button>
-</div>
-
                           </div>
                         )}
                       </Draggable>
                     ))}
+
                     {provided.placeholder}
                   </div>
                 )}
               </Droppable>
 
-              {workout.length > 0 && (
-                <button className="w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700 transition text-lg font-semibold">
-                  Save Workout
-                </button>
-              )}
+              <button
+                onClick={saveCurrentRoutine}
+                className="mt-4 w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700 transition font-semibold text-lg"
+              >
+                Save Routine
+              </button>
             </div>
           </div>
         </DragDropContext>
