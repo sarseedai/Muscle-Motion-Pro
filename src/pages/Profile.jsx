@@ -10,12 +10,12 @@ const UserProfile = () => {
     totalWorkouts: 47,
     currentStreak: 12,
     longestStreak: 18,
-    totalWeightLifted: 125000, 
+    totalWeightLifted: 125000,
     achievements: [
-      { name: "First Workout", date: "Jan 15, 2023", icon: "🎯" },
-      { name: "Week Warrior", date: "Feb 1, 2023", icon: "💪" },
-      { name: "Consistency King", date: "Feb 20, 2023", icon: "🔥" },
-      { name: "Strength Milestone", date: "Mar 5, 2023", icon: "🏆" },
+      { name: "First Workout", date: "Jan 15, 2023", icon: Target },
+      { name: "Week Warrior", date: "Feb 1, 2023", icon: Calendar },
+      { name: "Consistency King", date: "Feb 20, 2023", icon: Flame },
+      { name: "Strength Milestone", date: "Mar 5, 2023", icon: Trophy },
     ],
   };
 
@@ -114,18 +114,21 @@ const UserProfile = () => {
           <div>
             <div className="bg-yellow-50 rounded-2xl p-6 shadow-md space-y-4">
               <h3 className="text-xl font-semibold mb-4">Recent Achievements</h3>
-              {userStats.achievements.map((achievement, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 bg-yellow-100 rounded-lg p-3"
-                >
-                  <div className="text-2xl">{achievement.icon}</div>
-                  <div>
-                    <h4 className="font-semibold text-sm">{achievement.name}</h4>
-                    <p className="text-xs text-gray-600">{achievement.date}</p>
+              {userStats.achievements.map((achievement, idx) => {
+                const Icon = achievement.icon;
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3 bg-yellow-100 rounded-lg p-3"
+                  >
+                    <Icon className="w-6 h-6 text-yellow-600" />
+                    <div>
+                      <h4 className="font-semibold text-sm">{achievement.name}</h4>
+                      <p className="text-xs text-gray-600">{achievement.date}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
