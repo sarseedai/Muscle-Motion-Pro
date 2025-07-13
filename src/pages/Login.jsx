@@ -1,13 +1,61 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Dumbbell, Mail, Lock } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
 
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  const [errors, setErrors] = useState({});
+  const [loginError, setLoginError] = useState(''); // New state to show login failure
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required.';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid.';
+    }
+
+    if (!formData.password.trim()) {
+      newErrors.password = 'Password is required.';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setLoginError(''); // Clear login error when user types
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    if (validate()) {
+      const storedUser = JSON.parse(localStorage.getItem('userData'));
+
+      if (
+        storedUser &&
+        storedUser.email === formData.email &&
+        storedUser.password === formData.password
+      ) {
+        // Successful login
+        localStorage.setItem('isLoggedIn', 'true');
+        navigate('/dashboard');
+      } else {
+        // Login failed
+        setLoginError('Invalid email or password.');
+      }
+    }
   };
 
   return (
@@ -49,12 +97,15 @@ export default function Login() {
                   id="email"
                   name="email"
                   type="email"
-                  required
-                  autoComplete="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="Enter your email"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
+                    errors.email ? 'border-red-500' : 'border-gray-300'
+                  } focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition`}
                 />
               </div>
+              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
             </div>
 
             {/* Password */}
@@ -68,13 +119,19 @@ export default function Login() {
                   id="password"
                   name="password"
                   type="password"
-                  required
-                  autoComplete="current-password"
+                  value={formData.password}
+                  onChange={handleChange}
                   placeholder="Enter your password"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
+                    errors.password ? 'border-red-500' : 'border-gray-300'
+                  } focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition`}
                 />
               </div>
+              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
             </div>
+
+            {/* Login error */}
+            {loginError && <p className="text-red-500 text-center text-sm">{loginError}</p>}
 
             {/* Submit Button */}
             <button

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import DashboardCard from "../components/DashboardCard";
@@ -8,21 +9,32 @@ import Goalsprogress from "../components/Goalsprogress";
 const lbsToKgs = (lbs) => (lbs / 2.20462).toFixed(1);
 
 export default function Dashboard() {
-  const totalWeightLbs = 12450;
-  const totalWeightKgs = lbsToKgs(totalWeightLbs);
+  const [summaryStats, setSummaryStats] = useState([]);
+  const [goals, setGoals] = useState([]);
 
-  const summaryStats = [
-    { title: "This Week", value: 5, color: "bg-purple-600" },
-    { title: "Total Weight", value: `${totalWeightKgs} kgs`, color: "bg-blue-600" },
-    { title: "Goals Hit", value: "3/5", color: "bg-green-600" },
-    { title: "Calories Burned", value: 2840, color: "bg-orange-600" },
-  ];
+  useEffect(() => {
+    // Mock API call to fetch dashboard data
+    const fetchDashboardData = async () => {
+      const data = {
+        summaryStats: [
+          { title: "This Week", value: 5, color: "bg-purple-600" },
+          { title: "Total Weight", value: `${lbsToKgs(12450)} kgs`, color: "bg-blue-600" },
+          { title: "Goals Hit", value: "3/5", color: "bg-green-600" },
+          { title: "Calories Burned", value: 2840, color: "bg-orange-600" },
+        ],
+        goals: [
+          { name: "Bench Press Goal", current: 80, target: 100, unit: "kg" },
+          { name: "Weekly Workouts", current: 3, target: 5, unit: "sessions" },
+          { name: "Body Weight", current: 74, target: 72, unit: "kg" },
+        ],
+      };
 
-  const goals = [
-    { name: "Bench Press Goal", current: 80, target: 100, unit: "kg" },
-    { name: "Weekly Workouts", current: 3, target: 5, unit: "sessions" },
-    { name: "Body Weight", current: 74, target: 72, unit: "kg" },
-  ];
+      setSummaryStats(data.summaryStats);
+      setGoals(data.goals);
+    };
+
+    fetchDashboardData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
