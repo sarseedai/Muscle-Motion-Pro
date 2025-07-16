@@ -51,10 +51,7 @@ const UserProfile = () => {
                 <h2 className="text-2xl font-bold">Sarthak Sedai</h2>
                 <p className="text-gray-500">Member since January 2023</p>
               </div>
-              <button className="flex items-center gap-2 text-purple-600 hover:text-purple-800">
-                <Settings className="w-5 h-5" />
-                Edit Profile
-              </button>
+            
             </div>
           </div>
         </div>
