@@ -11,7 +11,12 @@ import {
   ChevronRight,
   ChevronDown,
   Plus,
+  Check,
   Minus,
+  Box,
+  Boxes,
+  DonutIcon,
+  Circle,
 } from "lucide-react";
 import Timer from "../components/Timer";
 import Navbar from "../components/Navbar";
@@ -71,7 +76,11 @@ export default function Workout() {
   const [collapsedParts, setCollapsedParts] = useState([...bodyParts]);
   const [collapsedRoutines, setCollapsedRoutines] = useState(true);
   const [workout, setWorkout] = useState([]);
-  const [savedRoutines, setSavedRoutines] = useState([]);
+  const [workoutThisWeek, setWorkoutThisWeek] = useState(null)
+  const [savedRoutines, setSavedRoutines] = useState(() => {
+    const data = JSON.parse(localStorage.getItem('savedWorkout'))
+    return data ?? []
+  });
 
   const togglePart = (part) => {
     setCollapsedParts((prev) =>
@@ -127,6 +136,16 @@ export default function Workout() {
     0
   );
   const totalCalories = workout.reduce((total, ex) => total + ex.sets * ex.reps * 0.5, 0);
+  const getTotalWeight = (exercise) => {
+    let totalWeight = 0;
+    exercise.forEach(e => totalWeight = totalWeight + e.weight)
+    return totalWeight
+  }
+  function setDayActive(daysArray, dayToActivate) {
+    const newDaysArray = [...daysArray];
+    newDaysArray[dayToActivate] = 1;
+    return newDaysArray;
+  }
 
   const saveCurrentRoutine = () => {
     if (!workoutName.trim()) {
@@ -139,32 +158,85 @@ export default function Workout() {
     }
 
     const routine = {
-      id: "routine-" + Date.now(),
-      name: workoutName.trim(),
+      name: workoutName,
+      updatedAt: Date.now(),
       exercises: workout,
+      thisWeek: [0, 0, 0, 0, 0, 0, 0],
+      totalCaloriesLost: 0,
+      totalWeight: 0
     };
-
-    setSavedRoutines((prev) => [routine, ...prev]);
+    try {
+      // Get current saved routines from localStorage
+      const currentSavedRoutines = JSON.parse(localStorage.getItem('savedWorkout')) || [];
+      // Add the new routine to the beginning2
+      let routineExists = false
+      const updatedSavedRoutines = currentSavedRoutines.map((r) => {
+        if (routine.name === r.name) {
+          const a = {}
+          a.name = workoutName
+          a.updatedAt = Date.now()
+          a.exercises = workout
+          a.thisWeek = setDayActive(r.thisWeek, new Date().getDay())
+          if (JSON.stringify(r.thisWeek) === JSON.stringify(a.thisWeek))//this means user is changing today's activity again
+          {
+            const prevSessionCalories = r.exercises.reduce((total, ex) => total + ex.sets * ex.reps * 0.5, 0);
+            a.totalCaloriesLost = r.totalCaloriesLost - prevSessionCalories + totalCalories
+            const prevSessionWeights = getTotalWeight(r.exercises)
+            a.totalWeight = r.totalWeight - prevSessionWeights + getTotalWeight(workout)
+          }
+          else {
+            a.totalCaloriesLost = r.totalCaloriesLost + totalCalories
+            a.totalWeight = r.totalWeight + getTotalWeight(workout)
+          }
+          routineExists = true
+          return a
+        }
+        return r
+      })
+      // Save the updated list back to localStorage
+      if (!routineExists) {
+        localStorage.setItem('savedWorkout', JSON.stringify([routine, ...currentSavedRoutines]));
+        setSavedRoutines([routine, ...currentSavedRoutines]);
+      } else {
+        localStorage.setItem('savedWorkout', JSON.stringify(updatedSavedRoutines));
+        setSavedRoutines(updatedSavedRoutines);
+      }// Update the React state
+      toast.success("Routine saved!");
+    } catch (e) {
+      toast.warn("Failed to save the workout.");
+    }
     setWorkoutName("");
     setWorkout([]);
-    toast.success("Routine saved!");
+    setWorkoutThisWeek(null)
   };
 
   const loadRoutine = (routine) => {
+    setWorkoutThisWeek(routine.thisWeek)
     setWorkout(routine.exercises);
     setWorkoutName(routine.name);
   };
 
-  const removeRoutine = (id) => {
-    setSavedRoutines((prev) => prev.filter((r) => r.id !== id));
-    toast.info("Routine removed");
+  const removeRoutine = (name) => {
+    try {
+      // Get current saved routines from localStorage
+      const currentSavedRoutines = JSON.parse(localStorage.getItem('savedWorkout')) || [];
+      // Add the new routine to the beginning
+      const updatedSavedRoutines = currentSavedRoutines.filter((r) => r.name !== name)
+      // Save the updated list back to localStorage
+      localStorage.setItem('savedWorkout', JSON.stringify(updatedSavedRoutines));
+      // Update the React state
+      setSavedRoutines(updatedSavedRoutines);
+      toast.success("Routine removed!");
+    } catch (e) {
+      toast.warn("Failed to remove the workout.");
+    }
   };
 
   return (
     <div className="bg-gray-50 min-h-screen">
       <Header />
       <Navbar />
-      <div className="mx-auto px-4 md:px-6 lg:px-8 space-y-8 max-w-none">
+      <div className="mx-auto px-4 my-8 md:px-6 lg:px-8 space-y-8 max-w-none">
         <div className="flex justify-between items-center">
           <h1 className="text-4xl font-extrabold text-indigo-700 tracking-wide drop-shadow-md select-none">
             Workout Builder
@@ -254,7 +326,7 @@ export default function Workout() {
                     ) : (
                       savedRoutines.map((routine) => (
                         <div
-                          key={routine.id}
+                          key={routine.name}
                           className="p-3 bg-white border border-gray-300 rounded text-gray-700 text-sm hover:bg-gray-50 cursor-pointer flex justify-between items-center"
                           title={routine.name}
                         >
@@ -265,7 +337,7 @@ export default function Workout() {
                             {routine.name}
                           </span>
                           <button
-                            onClick={() => removeRoutine(routine.id)}
+                            onClick={() => removeRoutine(routine.name)}
                             className="text-red-600 hover:text-red-800 ml-3"
                             title="Remove routine"
                           >
@@ -283,18 +355,27 @@ export default function Workout() {
               <input
                 type="text"
                 value={workoutName}
+                disabled={workoutThisWeek}// will disable if its a already made routine
                 onChange={(e) => setWorkoutName(e.target.value)}
                 placeholder="Enter workout name..."
-                className="w-full px-5 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg"
+                className=" w-full px-5 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg"
               />
               <div className="flex justify-between text-gray-600 text-base font-medium">
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col items-center space-x-2">
                   <Clock className="w-5 h-5" />
                   <span>{Math.round(totalDuration)} min</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Flame className="w-5 h-5" />
-                  <span>{Math.round(totalCalories)} cal</span>
+                  {workoutThisWeek && <div className="flex flex-col items-center">
+                    <div className="flex">
+                      {workoutThisWeek.map((active, i) => <Box key={i} className={active == 1 ? "fill-emerald-300 w-5 h-5" : "w-5 h-5"} />)}
+                    </div>
+                    <span>Activity</span>
+                  </div>}
+                  <div className="flex flex-col items-center">
+                    <Flame className="w-5 h-5 fill-red-400" />
+                    <span>{Math.round(totalCalories)} cal</span>
+                  </div>
                 </div>
               </div>
 
@@ -303,11 +384,10 @@ export default function Workout() {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`min-h-[300px] p-5 border-2 rounded ${
-                      snapshot.isDraggingOver
-                        ? "border-indigo-400 bg-indigo-50"
-                        : "border-gray-300 bg-white"
-                    } space-y-4 transition`}
+                    className={`min-h-[300px] p-5 border-2 rounded ${snapshot.isDraggingOver
+                      ? "border-indigo-400 bg-indigo-50"
+                      : "border-gray-300 bg-white"
+                      } space-y-4 transition`}
                   >
                     {workout.length === 0 && (
                       <div className="text-center text-gray-500">
@@ -324,63 +404,71 @@ export default function Workout() {
                             {...prov.draggableProps}
                             className="bg-gray-50 border border-gray-200 rounded p-3 shadow-sm space-y-2"
                           >
-                            <div className="grid grid-cols-12 gap-4 items-center">
-                              <div {...prov.dragHandleProps} className="cursor-grab text-gray-400">
-                                <GripVertical className="w-6 h-6" />
+                            <div className="flex justify-between items-center gap-40 mb-4">
+                              <div className="flex gap-3">
+                                <div {...prov.dragHandleProps} className="cursor-grab text-gray-400">
+                                  <GripVertical className="w-6 h-6" />
+                                </div>
+                                <div className="col-span-5 font-semibold text-gray-800">{ex.name}</div>
                               </div>
-                              <div className="col-span-5 font-semibold text-gray-800">{ex.name}</div>
+                              <div className="flex gap-4">
+                                <div className="col-span-2 flex flex-col justify-center gap-2 items-center">
+                                  <label htmlFor="Sets" className="font-medium">Sets</label>
+                                  <div className=" flex items-center space-x-2">
+                                    <button
+                                      onClick={() => removeSet(ex.id)}
+                                      className="p-1 bg-indigo-100 text-indigo-700 rounded"
+                                    >
+                                      <Minus className="w-4 h-4" />
+                                    </button>
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      value={ex.sets}
+                                      onChange={(e) => updateField(ex.id, "sets", Number(e.target.value))}
+                                      className="w-12 text-center rounded border border-gray-300"
+                                    />
+                                    <button
+                                      onClick={() => addSet(ex.id)}
+                                      className="p-1 bg-indigo-100 text-indigo-700 rounded"
+                                    >
+                                      <Plus className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
 
-                              <div className="col-span-2 flex items-center space-x-2">
-                                <button
-                                  onClick={() => removeSet(ex.id)}
-                                  className="p-1 bg-indigo-100 text-indigo-700 rounded"
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </button>
-                                <input
-                                  type="number"
-                                  min={1}
-                                  value={ex.sets}
-                                  onChange={(e) => updateField(ex.id, "sets", Number(e.target.value))}
-                                  className="w-12 text-center rounded border border-gray-300"
-                                />
-                                <button
-                                  onClick={() => addSet(ex.id)}
-                                  className="p-1 bg-indigo-100 text-indigo-700 rounded"
-                                >
-                                  <Plus className="w-4 h-4" />
-                                </button>
-                              </div>
+                                <div className="col-span-2 flex flex-col justify-center gap-2 items-center">
+                                  <label htmlFor="Reps" className="font-medium">Reps</label>
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    value={ex.reps}
+                                    onChange={(e) => updateField(ex.id, "reps", Number(e.target.value))}
+                                    className="w-full text-center rounded border border-gray-300"
+                                  />
+                                </div>
 
-                              <div className="col-span-2">
-                                <input
-                                  type="number"
-                                  min={1}
-                                  value={ex.reps}
-                                  onChange={(e) => updateField(ex.id, "reps", Number(e.target.value))}
-                                  className="w-full text-center rounded border border-gray-300"
-                                />
-                              </div>
+                                <div className="col-span-2 flex flex-col justify-center gap-2 items-center">
+                                  <label htmlFor="Weight" className="font-medium">Weight(lb)</label>
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    value={ex.weight}
+                                    onChange={(e) => updateField(ex.id, "weight", Number(e.target.value))}
+                                    className="w-full text-center rounded border border-gray-300"
+                                    placeholder="Weight"
+                                  />
+                                </div>
 
-                              <div className="col-span-2">
-                                <input
-                                  type="number"
-                                  min={0}
-                                  value={ex.weight}
-                                  onChange={(e) => updateField(ex.id, "weight", Number(e.target.value))}
-                                  className="w-full text-center rounded border border-gray-300"
-                                  placeholder="Weight"
-                                />
-                              </div>
-
-                              <div className="col-span-1 text-right">
-                                <button
-                                  onClick={() => removeExercise(ex.id)}
-                                  className="text-red-500 hover:text-red-700"
-                                  title="Remove exercise"
-                                >
-                                  <Trash2 className="w-5 h-5" />
-                                </button>
+                                <div className="col-span-1 text-right">
+                                  <button
+                                    onClick={() => removeExercise(ex.id)}
+                                    className="text-red-500 hover:text-red-700"
+                                    title="Remove exercise"
+                                  >
+                                    <Trash2 className="w-5 h-5" />
+                                  </button>
+                                </div>
                               </div>
                             </div>
 
@@ -426,8 +514,8 @@ export default function Workout() {
                   onClick={saveCurrentRoutine}
                   className="flex items-center space-x-2 bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition"
                 >
-                  <Plus className="w-5 h-5" />
-                  <span>Save Routine</span>
+                  <Check className="w-5 h-5" />
+                  <span>{workoutThisWeek ? "Save Today" : "Save Routine"}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -442,8 +530,8 @@ export default function Workout() {
               </div>
             </div>
           </div>
-        </DragDropContext>
-      </div>
+        </DragDropContext >
+      </div >
 
       <ToastContainer
         position="top-right"
@@ -457,6 +545,6 @@ export default function Workout() {
         pauseOnHover
         theme="colored"
       />
-    </div>
+    </div >
   );
 }

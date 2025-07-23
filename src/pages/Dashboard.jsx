@@ -2,31 +2,95 @@ import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import DashboardCard from "../components/DashboardCard";
-import ProgressChart from "../components/ProgressChart";
 import ActivityChart from "../components/ActivityChart";
 import Goalsprogress from "../components/Goalsprogress";
 
 const lbsToKgs = (lbs) => (lbs / 2.20462).toFixed(1);
 
+export const getThisWeekActive = () => {
+  const workouts = localStorage.getItem("savedWorkout") || "[]"
+  let sessions = 0
+  JSON.parse(workouts).forEach((r) => {
+    r.thisWeek.forEach((active, i) => {
+      if (active == 1) sessions = sessions + 1
+    })
+  })
+  return sessions
+}
+const getTotalWeightTillNow = () => {
+  const workouts = localStorage.getItem("savedWorkout") || "[]"
+  let weight = 0
+  JSON.parse(workouts).forEach((r) => {
+    weight = weight + r.totalWeight
+  })
+  return lbsToKgs(weight)
+}
+const getTotalCaloriesTillNow = () => {
+  const workouts = localStorage.getItem("savedWorkout") || "[]"
+  let calories = 0
+  JSON.parse(workouts).forEach((r) => {
+    calories = calories + r.totalCaloriesLost
+  })
+  return calories
+}
+export const getGoals = (goals) => {
+  const bench = JSON.parse(localStorage.getItem("userPersonalBests") || "[]")?.find(v => v.name === "Bench Press")
+  const bodyWeight = JSON.parse(localStorage.getItem("userBodyMatrics") || "[]")?.find(v => v.name === "Body Weight")
+  const sessions = getThisWeekActive()
+
+  const data = goals.map((v) => {
+    const newGoal = { ...v }; // Create a new object
+
+    if (newGoal.name === "Bench Press") {
+      newGoal.current = bench?.data ?? null;
+      newGoal.date = bench?.date ? new Date(bench.date).toDateString() : null; // Example: convert to string
+    } else if (newGoal.name === "Workout per week") { // Use else if for mutually exclusive conditions
+      newGoal.current = sessions ?? null;
+      newGoal.date = null; // No date for this goal
+    } else if (newGoal.name === "Body Weight Goal") { // Use else if
+      newGoal.current = bodyWeight?.data ?? null;
+      newGoal.date = bodyWeight?.date ? new Date(bodyWeight.date).toDateString() : null; // Example: convert to string
+    }
+    return newGoal; // Return the new object
+  });
+  return data;
+};
 export default function Dashboard() {
   const [summaryStats, setSummaryStats] = useState([]);
-  const [goals, setGoals] = useState([]);
+  const [goals, setGoals] = useState(() => {
+    const stored = localStorage.getItem("userGoals");
+    try {
+      return stored ? JSON.parse(stored) : [
+        { name: "Bench Press", target: null },
+        { name: "Workout per week", target: null, },
+        { name: "Body Weight Goal", target: null, },
+      ];
+    } catch {
+      return [
+        { name: "Bench Press", target: null },
+        { name: "Workout per week", target: null, },
+        { name: "Body Weight Goal", target: null, },
+      ];
+    }
+  });
 
   useEffect(() => {
     // Mock API call to fetch dashboard data
     const fetchDashboardData = async () => {
+      const Goals = getGoals(goals)
+      let goalsHit = 0;
+      Goals.forEach((v) => {
+        if (v.curren && v.target && v.current >= v.target) goalsHit += 1
+      })
+
       const data = {
         summaryStats: [
-          { title: "This Week", value: 5, color: "bg-purple-600" },
-          { title: "Total Weight", value: `${lbsToKgs(12450)} kgs`, color: "bg-blue-600" },
-          { title: "Goals Hit", value: "3/5", color: "bg-green-600" },
-          { title: "Calories Burned", value: 2840, color: "bg-orange-600" },
+          { title: "Sessions This Week", value: getThisWeekActive(), color: "bg-purple-600" },
+          { title: "Total Weight", value: `${getTotalWeightTillNow()} kgs`, color: "bg-blue-600" },
+          { title: "Goals Hit", value: `${goalsHit}/${Goals.length}`, color: "bg-green-600" },
+          { title: "Calories Burned", value: `${getTotalCaloriesTillNow()}`, color: "bg-orange-600" },
         ],
-        goals: [
-          { name: "Bench Press Goal", current: 80, target: 100, unit: "kg" },
-          { name: "Weekly Workouts", current: 3, target: 5, unit: "sessions" },
-          { name: "Body Weight", current: 74, target: 72, unit: "kg" },
-        ],
+        goals: Goals
       };
 
       setSummaryStats(data.summaryStats);
@@ -56,8 +120,8 @@ export default function Dashboard() {
           ))}
         </section>
 
-        <section className="grid md:grid-cols-2 gap-6" aria-label="Charts">
-          <div
+        <section className="grid md:grid-cols-1 gap-6" aria-label="Charts">
+          {/* <div
             className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
             role="region"
             aria-labelledby="weight-progress-heading"
@@ -69,7 +133,7 @@ export default function Dashboard() {
               Weight Progress
             </h2>
             <ProgressChart />
-          </div>
+          </div> */}
           <div
             className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
             role="region"
@@ -99,7 +163,7 @@ export default function Dashboard() {
                   <div className="flex items-center space-x-4">
                     <Goalsprogress value={progress} className="flex-grow" />
                     <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                      {goal.current} / {goal.target} {goal.unit}
+                      {goal.current ?? "--"} / {goal.target ?? "--"}{goal.name === "Workout per week" ? " sessions" : " kg"}
                     </span>
                   </div>
                 </div>
